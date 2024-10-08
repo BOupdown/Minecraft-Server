@@ -1,7 +1,7 @@
-# Lancer le service Minecraft Server
+minikube start
 
-kubectl apply port-forward service/demominecraft 25565:25565
+kubectl run demominecraft --image=boupdown/myminecraftserver
 
-# CONNEXION SUR LE CLIENT MINECRAFT
+kubectl port-forward pod/demominecraft 25565:25565
 
-localhost:25565:25565
+
