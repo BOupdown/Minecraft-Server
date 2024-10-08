@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demominecraft
+  labels:
+    app: demominecraft
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demominecraft
+  template:
+    metadata:
+      labels:
+        app: demominecraft
+    spec:
+      containers:
+      - name: demominecraft
+        image: itzg/minecraft-server  # Use your custom image if applicable
+        ports:
+        - containerPort: 25565  # Default port for Minecraft server
+        env:  # Optional: Set environment variables if needed
+          - name: EULA
+            value: "TRUE"  # Accept EULA (required)
+          # Add more environment variables as needed
