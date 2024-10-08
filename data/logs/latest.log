@@ -1,0 +1,37 @@
+[12:21:05] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[12:21:07] [ServerMain/INFO]: Loaded 1290 recipes
+[12:21:07] [ServerMain/INFO]: Loaded 1399 advancements
+[12:21:07] [Server thread/INFO]: Starting minecraft server version 1.21.1
+[12:21:07] [Server thread/INFO]: Loading properties
+[12:21:07] [Server thread/INFO]: Default game type: SURVIVAL
+[12:21:07] [Server thread/INFO]: Generating keypair
+[12:21:07] [Server thread/INFO]: Starting Minecraft server on *:25565
+[12:21:08] [Server thread/INFO]: Using epoll channel type
+[12:21:08] [Server thread/INFO]: Preparing level "world"
+[12:21:10] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[12:21:10] [Worker-Main-4/INFO]: Preparing spawn area: 0%
+[12:21:10] [Worker-Main-1/INFO]: Preparing spawn area: 51%
+[12:21:10] [Server thread/INFO]: Time elapsed: 634 ms
+[12:21:10] [Server thread/INFO]: Done (2.711s)! For help, type "help"
+[12:21:10] [Server thread/INFO]: Starting remote control listener
+[12:21:10] [Server thread/INFO]: Thread RCON Listener started
+[12:21:10] [Server thread/INFO]: RCON running on 0.0.0.0:25575
+[12:22:02] [User Authenticator #1/INFO]: UUID of player BOupdown is a2f6d3b0-f09d-4e00-984e-203def2a18c2
+[12:22:03] [Server thread/INFO]: BOupdown[/172.23.0.1:53122] logged in with entity id 27 at (6.5, 73.0, 29.5)
+[12:22:03] [Server thread/INFO]: BOupdown joined the game
+[12:22:10] [Server thread/INFO]: BOupdown lost connection: Disconnected
+[12:22:10] [Server thread/INFO]: BOupdown left the game
+[12:22:20] [RCON Listener #1/INFO]: Thread RCON Client /127.0.0.1 started
+[12:22:20] [Server thread/INFO]: [Rcon: Stopping the server]
+[12:22:20] [RCON Client /127.0.0.1 #2/INFO]: Thread RCON Client /127.0.0.1 shutting down
+[12:22:20] [Server thread/INFO]: Stopping server
+[12:22:20] [Server thread/INFO]: Saving players
+[12:22:20] [Server thread/INFO]: Saving worlds
+[12:22:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[12:22:25] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[12:22:25] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[12:22:25] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[12:22:25] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[12:22:25] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[12:22:25] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[12:22:25] [Server thread/INFO]: Thread RCON Listener stopped
