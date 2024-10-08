@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle du serveur Minecraft</title>
+    <script>
+        function startServer() {
+            fetch('/start')
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);  // Affiche la réponse du serveur
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        function stopServer() {
+            fetch('/stop')
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);  // Affiche la réponse du serveur
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Bienvenue sur le serveur Minecraft!</h1>
+    <button onclick="startServer()">Démarrer le serveur</button>
+    <button onclick="stopServer()">Arrêter le serveur</button>
+</body>
+</html>
