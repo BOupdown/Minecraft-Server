@@ -1,19 +1,38 @@
 version: '3.8'
 
 services:
-  web:
-    build: ./web  # Répertoire contenant votre Dockerfile pour l'app web
+  app-web:
+    build:
+      context: ./app-web
     ports:
       - "3000:3000"
-    depends_on:
-      - minecraft
+    networks:
+      - mon_reseau
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Ajoutez cette ligne
+    container_name: app-web
 
-  minecraft:
-    image: itzg/minecraft-server
+  serveur-minecraft:
+    build:
+      context: ./serveur-minecraft
     ports:
       - "25565:25565"
+    networks:
+      - mon_reseau
     volumes:
       - minecraft_data:/data
+    container_name: minecraft-server-1
+
+  serveur-minecraft2:
+    build:
+      context: ./serveur-minecraft
+    ports:
+      - "25566:25565"  # Nouveau port
+    container_name: minecraft-server2
 
 volumes:
   minecraft_data:
+
+networks:
+  mon_reseau:
+    driver: bridge
