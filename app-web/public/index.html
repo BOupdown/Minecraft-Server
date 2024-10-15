@@ -44,6 +44,7 @@
         <button type="button" onclick="startServer()">Démarrer</button>
         <button type="button" onclick="stopServer()">Arrêter</button>
         <button type="button" onclick="getLogs()">Voir les logs</button>
+        <button id="addServerBtn" onclick="addServer()">Ajouter Serveur</button>
       </form>
       
       <script>
@@ -79,6 +80,18 @@
             .then(logs => {
               alert(logs);  // Afficher les logs pour simplifier
             });
+        }
+
+        function addServer() {
+          fetch('/add-server', {
+              method: 'POST'
+          })
+          .then(response => response.json())
+          .then(data => {
+              // Mettez à jour la liste des serveurs affichés
+              updateServerList(data);
+          })
+          .catch(error => console.error('Erreur:', error));
         }
       </script>
       

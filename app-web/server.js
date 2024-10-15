@@ -16,6 +16,19 @@ function getMinecraftContainers(callback) {
     });
 }
 
+function updateServerStatus(serverName, status) {
+    const servers = JSON.parse(fs.readFileSync('servers.json', 'utf8'));
+    const server = servers.find(s => s.name === serverName);
+
+    if (server) {
+        server.status = status;
+    } else {
+        servers.push({ name: serverName, status: status });
+    }
+
+    fs.writeFileSync('servers.json', JSON.stringify(servers, null, 2));
+}
+
 // Middleware pour servir des fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -66,6 +79,19 @@ app.get('/logs/:server', (req, res) => {
         res.send(`<pre>${stdout}</pre>`);
     });
 });
+
+app.post('/add-server', (req, res) => {
+    const newServerName = `minecraft-server3`;
+    
+    exec(`docker run -d --name ${newServerName} -p [port]:25565 minecraft-image`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur lors de l'ajout du serveur: ${stderr}`);
+            return res.status(500).json({error: 'Erreur lors de l\'ajout du serveur'});
+        }
+        res.json({serverName: newServerName});
+    });
+});
+
 
 
 app.listen(PORT, () => {
