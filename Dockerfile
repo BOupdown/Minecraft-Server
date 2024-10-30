@@ -1,14 +1,21 @@
-# Étape 1 : Utiliser l'image de kubectl
+# Utiliser une image de base avec Python
 FROM ubuntu:latest
 
-# Étape 2 : Définir le répertoire de travail
-WORKDIR /app
+# Mettre à jour les paquets et installer Python et pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip
 
-# Copier les fichiers requis dans le conteneur
+# Copier tous les fichiers dans le répertoire /app
 COPY . /app
 
-# Installer les dépendances
-RUN pip install -r requirements.txt
+# Copier requirements.txt dans /app
+COPY requirements.txt ./app/requirements.txt
 
-# Lancer le script start-kubectl.sh
-CMD ["sh", "./start-kubectl.sh"]
+# Changer le répertoire de travail
+WORKDIR /app
+
+# Installer les dépendances
+RUN pip3 install -r requirements.txt
+
+# Donner les permissions d'exécution au script
+RUN chmod +x /script.sh

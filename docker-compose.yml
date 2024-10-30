@@ -1,15 +1,10 @@
 services:
-  ubuntu:
-    image: ubuntu:latest
-    volumes:
-      - .:/app
-    command: tail -f /dev/null  # Keeps the container running
-
-  service1:
+  scriptlauncher:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: .  # Contexte de construction
+      dockerfile: Dockerfile  # Spécifie le Dockerfile à utiliser
     volumes:
-      - .:/app
-    depends_on:
-      - ubuntu
+      - .:/app  # Monte le répertoire courant dans /app à l'intérieur du conteneur
+    command: ["bash", "/script.sh"]  # Remplacez par la commande que vous voulez exécuter
+    ports:
+      - "8080:8080"
