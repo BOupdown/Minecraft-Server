@@ -1,32 +1,15 @@
 services:
+  ubuntu:
+    image: ubuntu:latest
+    volumes:
+      - .:/app
+    command: tail -f /dev/null  # Keeps the container running
+
   service1:
     build:
       context: .
-      dockerfile: Dockerfile1
+      dockerfile: Dockerfile
     volumes:
       - .:/app
     depends_on:
-      - kubernetes
-
-  service2:
-    build:
-      context: .
-      dockerfile: Dockerfile2
-    volumes:
-      - .:/app
-    depends_on:
-      - service1
-
-  service3:
-    build:
-      context: .
-      dockerfile: Dockerfile3
-    volumes:
-      - .:/app
-    depends_on:
-      - service2
-
-  kubernetes:
-    image: bitnami/kubectl:latest
-    volumes:
-      - .:/app  # Assurez-vous que le volume est partagé pour que kubectl puisse accéder aux fichiers nécessaires
+      - ubuntu
