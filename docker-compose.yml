@@ -5,6 +5,5 @@ services:
       dockerfile: Dockerfile  # Spécifie le Dockerfile à utiliser
     volumes:
       - .:/app  # Monte le répertoire courant dans /app à l'intérieur du conteneur
-    command: ["bash", "/script.sh"]  # Remplacez par la commande que vous voulez exécuter
     ports:
       - "8080:8080"
