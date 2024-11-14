@@ -5,13 +5,13 @@ const app = express();
 const PORT = 3000;
 
 function getMinecraftContainers(callback) {
-    exec('docker ps --filter "name=minecraft" --format "{{.Names}}"', (error, stdout, stderr) => {
+    exec('kubectl get pods --selector=app=minecraft --output=jsonpath="{.items[*].metadata.name}"', (error, stdout, stderr) => {
         if (error) {
-            console.error('Erreur lors de la récupération des conteneurs:', stderr);
+            console.error('Erreur lors de la récupération des pods:', stderr);
             return callback(error, null);
         }
-        // Liste des conteneurs retournée sous forme de tableau
-        const containers = stdout.split('\n').filter(name => name !== '');
+        // Liste des pods sous forme de tableau
+        const containers = stdout.split(' ').filter(name => name !== '');
         callback(null, containers);
     });
 }
@@ -44,17 +44,28 @@ app.get('/containers', (req, res) => {
     });
 });
 
-// Route pour démarrer un serveur Minecraft spécifique
 app.post('/start/:server', (req, res) => {
     const server = req.params.server;
-    exec(`docker start ${server}`, (error, stdout, stderr) => {
+    exec(`kubectl scale deployment ${server} --replicas=1`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors du démarrage du serveur ${server}:`, stderr);
             return res.status(500).send(`Erreur : ${stderr}`);
         }
-        res.send(`Serveur Minecraft ${server} démarré : ${stdout}`);
+        res.send(`Serveur Minecraft ${server} démarré.`);
     });
 });
+
+app.post('/stop/:server', (req, res) => {
+    const server = req.params.server;
+    exec(`kubectl scale deployment ${server} --replicas=0`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur lors de l'arrêt du serveur ${server}:`, stderr);
+            return res.status(500).send(`Erreur : ${stderr}`);
+        }
+        res.send(`Serveur Minecraft ${server} arrêté.`);
+    });
+});
+
 
 // Route pour arrêter un serveur Minecraft spécifique
 app.post('/stop/:server', (req, res) => {
@@ -68,10 +79,9 @@ app.post('/stop/:server', (req, res) => {
     });
 });
 
-// Route pour obtenir les logs d'un serveur Minecraft spécifique
 app.get('/logs/:server', (req, res) => {
     const server = req.params.server;
-    exec(`docker logs ${server}`, (error, stdout, stderr) => {
+    exec(`kubectl logs deployment/${server}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de la récupération des logs du serveur ${server}:`, stderr);
             return res.status(500).send(`Erreur : ${stderr}`);
@@ -80,10 +90,11 @@ app.get('/logs/:server', (req, res) => {
     });
 });
 
+
 app.post('/add-server', (req, res) => {
     const newServerName = `minecraft-server3`;
-    
-    exec(`docker run -d --name ${newServerName} -p [port]:25565 minecraft-image`, (error, stdout, stderr) => {
+
+    exec(`kubectl create deployment ${newServerName} --image=itzg/minecraft-server`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'ajout du serveur: ${stderr}`);
             return res.status(500).json({error: 'Erreur lors de l\'ajout du serveur'});
