@@ -4,13 +4,6 @@ FROM ubuntu:latest
 # Create a non-root user (minikubeuser)
 RUN useradd -m minikubeuser
 
-# Install necessary packages (no need for sudo here)
-RUN apt-get update && \
-    apt-get install -y curl python3 python3-pip python3-venv docker.io && \
-    apt-get clean
-# Install FastAPI and Uvicorn
-RUN pip install fastapi uvicorn
-
 # Install Minikube
 RUN curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \
     install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
