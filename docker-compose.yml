@@ -9,7 +9,7 @@ services:
     networks:
       - mon_reseau
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # Ajoutez cette ligne
+      - /var/run/docker.sock:/var/run/docker.sock  
     container_name: app-web
 
   serveur-minecraft:
