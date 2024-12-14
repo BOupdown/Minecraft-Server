@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
+
+
 # Install Docker in the container
 RUN apt-get update && apt-get install -y docker.io && \
     rm -rf /var/lib/apt/lists/*
@@ -22,7 +24,8 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" && \
     echo "$(cat kubectl.sha256) kubectl" | sha256sum --check && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-    rm kubectl kubectl.sha256
+    apt-get install -y conntrack
+
 
 
 # Add a non-root user (minikubeuser) and add it to the Docker group
