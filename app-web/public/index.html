@@ -5,60 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contrôler le serveur Minecraft</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        pre {
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            overflow-x: auto;
-            white-space: pre-wrap; 
-            word-wrap: break-word;
-        }
-        #logs {
-            margin-top: 20px;
-            display: none;
-        }
-    </style>
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f0f0f0;
+      }
+      h1 {
+          color: #333;
+      }
+      button {
+          padding: 10px 20px;
+          margin: 10px;
+          border: none;
+          border-radius: 5px;
+          background-color: #007BFF;
+          color: white;
+          cursor: pointer;
+      }
+      button:hover {
+          background-color: #0056b3;
+      }
+      pre {
+          background-color: #fff;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow-x: auto;
+      }
+      #serverDetails {
+          margin-top: 20px;
+      }
+  </style>
 </head>
 <body>
-    <h1>Contrôler le serveur Minecraft</h1>
-    <form id="serverForm">
-        <label for="servers">Sélectionnez un serveur Minecraft :</label>
-        <select id="servers" name="servers">
-          <!-- Les options des serveurs seront insérées ici dynamiquement -->
-        </select>
-        <br>
-        <button type="button" onclick="startServer()">Démarrer</button>
-        <button type="button" onclick="stopServer()">Arrêter</button>
-        <button type="button" onclick="getLogs()">Voir les logs</button>
-        <button id="addServerBtn" onclick="addServer()">Ajouter Serveur</button>
-    </form>
+  <form id="serverForm">
+    <label for="servers">Sélectionnez un serveur Minecraft :</label>
+    <select id="servers" name="servers" onchange="updateServerDetails()">
+      <option value="defaut">--</option>
+      <!-- Les options des serveurs seront insérées ici dynamiquement -->
+    </select>
+    <button type="button" onclick="startServer()">Démarrer</button>
+    <button type="button" onclick="stopServer()">Arrêter</button>
+    <button type="button" onclick="getLogs()">Voir les logs</button>
+    <button id="addServerBtn" onclick="addServer()">Ajouter Serveur</button>
+</form>
 
-    <div id="logs">
-        <h2>Logs du Serveur</h2>
-        <pre id="logContent"></pre>
-    </div>
+<div id="serverDetails">
+    <!-- Server details will be displayed here -->
+    <h3>Détails du serveur :</h3>
+    <p><strong>Nom:</strong> <span id="serverName">Aucun serveur sélectionné</span></p>
+    <p><strong>IP:</strong> <span id="serverIP">Non défini</span></p>
+    <p><strong>Port:</strong> <span id="serverPort">Non défini</span></p>
+</div>
+
+<div id="logs" style="display:none;">
+  <div id="logContent"></div>
+</div>
+
 
     <script>
         // Obtenir la liste des serveurs au chargement de la page
@@ -69,12 +73,11 @@
                     const select = document.getElementById('servers');
                     data.forEach(container => {
                         const option = document.createElement('option');
-                        option.value = container;
-                        option.text = container;
+                        option.value = container.name;
+                        option.text = container.name;
                         select.appendChild(option);
                     });
-                })
-                .catch(error => console.error('Erreur:', error));
+                });
         };
       
         function startServer() {
@@ -110,17 +113,28 @@
         }
 
         function getLogs() {
-            const server = document.getElementById('servers').value;
-            fetch(`/logs/${server}`)
-                .then(response => response.text())
-                .then(logs => {
-                    document.getElementById('logContent').textContent = logs;
-                    document.getElementById('logs').style.display = 'block'; // Show logs section
-                })
-                .catch(error => {
-                    alert('Erreur lors de la récupération des logs');
-                });
-        }
+        const server = document.getElementById('servers').value;
+
+        const logContainer = document.getElementById('logContent');
+        logContainer.textContent = '';  // Clear previous logs
+        document.getElementById('logs').style.display = 'block';  // Show log section
+
+        // Create an EventSource to receive the logs
+        const eventSource = new EventSource(`/logs/${server}`);
+
+        // Handle incoming logs 
+        eventSource.onmessage = function(event) {
+            logContainer.textContent += '\n'+event.data;  // Append log data to the content
+            logContainer.scrollTop = logContainer.scrollHeight;  // Scroll to bottom
+        };
+
+        // Handle connection closed
+        eventSource.onclose = function() {
+            console.log('Log stream closed');
+        };
+    }
+
+  
 
         function addServer() {
             disableButtons(true);  // Disable buttons during the operation
@@ -139,15 +153,22 @@
             });
         }
 
-        function updateServerList(newServer) {
-            const select = document.getElementById('servers');
-            const option = document.createElement('option');
-            option.value = newServer;
-            option.text = newServer;
-            select.appendChild(option);
-            select.value = newServer; // Optionally select the newly added server
-        }
+           // Mise à jour des détails du serveur sélectionné
+           function updateServerDetails() {
+            const server = document.getElementById('servers').value;
 
+            // Requête pour obtenir les détails du serveur
+            fetch(`/containers`)
+                .then(response => response.json())
+                .then(servers => {
+                    const selectedServer = servers.find(s => s.name === server);
+                    if (selectedServer) {
+                        document.getElementById('serverName').textContent = selectedServer.name;
+                        document.getElementById('serverIP').textContent = selectedServer.ip;
+                        document.getElementById('serverPort').textContent = selectedServer.port;
+                    }
+                });
+        }
         function disableButtons(disabled) {
             const buttons = document.querySelectorAll('button');
             buttons.forEach(button => button.disabled = disabled);

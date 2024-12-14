@@ -21,14 +21,16 @@ services:
       - mon_reseau
     volumes:
       - minecraft_data:/data
-    container_name: minecraft-server-1
+    container_name: minecraft_server_1
 
   serveur-minecraft2:
     build:
       context: ./serveur-minecraft
+    networks:
+      - mon_reseau
     ports:
       - "25566:25565"  # Nouveau port
-    container_name: minecraft-server2
+    container_name: minecraft_server_2
 
 volumes:
   minecraft_data:
