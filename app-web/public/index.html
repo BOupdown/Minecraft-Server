@@ -32,68 +32,126 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             overflow-x: auto;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+        #logs {
+            margin-top: 20px;
+            display: none;
         }
     </style>
 </head>
 <body>
+    <h1>Contrôler le serveur Minecraft</h1>
     <form id="serverForm">
         <label for="servers">Sélectionnez un serveur Minecraft :</label>
         <select id="servers" name="servers">
           <!-- Les options des serveurs seront insérées ici dynamiquement -->
         </select>
+        <br>
         <button type="button" onclick="startServer()">Démarrer</button>
         <button type="button" onclick="stopServer()">Arrêter</button>
         <button type="button" onclick="getLogs()">Voir les logs</button>
         <button id="addServerBtn" onclick="addServer()">Ajouter Serveur</button>
-      </form>
-      
-      <script>
+    </form>
+
+    <div id="logs">
+        <h2>Logs du Serveur</h2>
+        <pre id="logContent"></pre>
+    </div>
+
+    <script>
         // Obtenir la liste des serveurs au chargement de la page
         window.onload = function() {
-          fetch('/containers')
-            .then(response => response.json())
-            .then(data => {
-              const select = document.getElementById('servers');
-              data.forEach(container => {
-                const option = document.createElement('option');
-                option.value = container;
-                option.text = container;
-                select.appendChild(option);
-              });
-            });
+            fetch('/containers')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('servers');
+                    data.forEach(container => {
+                        const option = document.createElement('option');
+                        option.value = container;
+                        option.text = container;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erreur:', error));
         };
       
         function startServer() {
-          const server = document.getElementById('servers').value;
-          fetch(`/start/${server}`, { method: 'POST' });
+            const server = document.getElementById('servers').value;
+            disableButtons(true);  // Disable buttons during the operation
+            fetch(`/start/${server}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert(`Serveur ${server} démarré`);
+                    }
+                    disableButtons(false);
+                })
+                .catch(error => {
+                    alert('Erreur lors du démarrage du serveur');
+                    disableButtons(false);
+                });
         }
-      
+
         function stopServer() {
-          const server = document.getElementById('servers').value;
-          fetch(`/stop/${server}`, { method: 'POST' });
+            const server = document.getElementById('servers').value;
+            disableButtons(true);  // Disable buttons during the operation
+            fetch(`/stop/${server}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert(`Serveur ${server} arrêté`);
+                    }
+                    disableButtons(false);
+                })
+                .catch(error => {
+                    alert('Erreur lors de l\'arrêt du serveur');
+                    disableButtons(false);
+                });
         }
-      
+
         function getLogs() {
-          const server = document.getElementById('servers').value;
-          fetch(`/logs/${server}`)
-            .then(response => response.text())
-            .then(logs => {
-              alert(logs);  // Afficher les logs pour simplifier
-            });
+            const server = document.getElementById('servers').value;
+            fetch(`/logs/${server}`)
+                .then(response => response.text())
+                .then(logs => {
+                    document.getElementById('logContent').textContent = logs;
+                    document.getElementById('logs').style.display = 'block'; // Show logs section
+                })
+                .catch(error => {
+                    alert('Erreur lors de la récupération des logs');
+                });
         }
 
         function addServer() {
-          fetch('/add-server', {
-              method: 'POST'
-          })
-          .then(response => response.json())
-          .then(data => {
-              // Mettez à jour la liste des serveurs affichés
-              updateServerList(data);
-          })
-          .catch(error => console.error('Erreur:', error));
+            disableButtons(true);  // Disable buttons during the operation
+            fetch('/add-server', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Serveur ${data.serverName} ajouté`);
+                updateServerList(data.serverName);
+                disableButtons(false);
+            })
+            .catch(error => {
+                alert('Erreur lors de l\'ajout du serveur');
+                disableButtons(false);
+            });
         }
-      </script>
-      
+
+        function updateServerList(newServer) {
+            const select = document.getElementById('servers');
+            const option = document.createElement('option');
+            option.value = newServer;
+            option.text = newServer;
+            select.appendChild(option);
+            select.value = newServer; // Optionally select the newly added server
+        }
+
+        function disableButtons(disabled) {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => button.disabled = disabled);
+        }
+    </script>
 </body>
 </html>
