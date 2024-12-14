@@ -8,6 +8,8 @@ RUN useradd -m minikubeuser
 RUN apt-get update && \
     apt-get install -y curl python3 python3-pip python3-venv docker.io && \
     apt-get clean
+# Install FastAPI and Uvicorn
+RUN pip install fastapi uvicorn
 
 # Install Minikube
 RUN curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \
@@ -17,16 +19,28 @@ RUN curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-li
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+# Switch to root user for chmod
+USER root
 
-# Switch to the non-root user
+# Add minikubeuser to the Docker group
+RUN groupadd -g 999 docker && usermod -aG docker minikubeuser
+
+# Switch back to minikubeuser
 USER minikubeuser
-
 # Copy all files into the /app directory in the container
 COPY . /app/
+
 
 # Give execution permissions to the start-kubectl.sh script
 RUN chmod +x /app/start-kubectl.sh
 
+# Switch back to non-root user
+USER minikubeuser
+
 # Define the command to run
 CMD ["bash", "/app/start-kubectl.sh"]
+
+# Switch back to root to modify user groups
+USER root
+
 

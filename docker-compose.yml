@@ -1,10 +1,20 @@
 services:
   scriptlauncher:
     build:
-      context: .  # Contexte de construction
-      dockerfile: Dockerfile  # Spécifie le Dockerfile à utiliser
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - .:/app  # Monte le répertoire courant dans /app à l'intérieur du conteneur
       - /var/run/docker.sock:/var/run/docker.sock
+
     ports:
       - "8080:8080"
+  
+  fastapi-server:
+    build:
+      context: ./fastapi-app
+    ports:
+      - "8080:8080"
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+    environment:
+      - KUBECONFIG=./Dockerfile

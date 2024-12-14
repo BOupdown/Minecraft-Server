@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Manager</title>
+</head>
+<body>
+    <h1>Minecraft Server Manager</h1>
+    <button onclick="startServer()">Start Server</button>
+    <button onclick="stopServer()">Stop Server</button>
+    <button onclick="fetchLogs()">View Logs</button>
+    <pre id="logs"></pre>
+
+    <script>
+        const baseUrl = "http://localhost:8000"; // Update with your FastAPI server URL if needed
+
+        async function startServer() {
+            await fetch(`${baseUrl}/start`, { method: "POST" });
+            alert("Minecraft server started!");
+        }
+
+        async function stopServer() {
+            await fetch(`${baseUrl}/stop`, { method: "POST" });
+            alert("Minecraft server stopped!");
+        }
+
+        async function fetchLogs() {
+            const response = await fetch(`${baseUrl}/logs`);
+            const data = await response.json();
+            document.getElementById("logs").innerText = data.logs || data.error;
+        }
+    </script>
+</body>
+</html>
