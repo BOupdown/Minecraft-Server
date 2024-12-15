@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contrôler le serveur Minecraft</title>
+  <style>
+    body {
+      font-family: 'Minecraft', Arial, sans-serif;
+      background-color: #9E9E9E;
+      color: #FFF;
+      margin: 0;
+      padding: 20px;
+      background-image: url('https://example.com/minecraft-background.jpg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  
+    h1 {
+      color: #6c4f3d;
+      font-size: 36px;
+      text-align: center;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+    }
+  
+    button {
+      padding: 12px 24px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #8B4513;
+      color: white;
+      cursor: pointer;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+  
+    button:hover {
+      background-color: #A0522D;
+      transform: scale(1.05);
+    }
+  
+    select {
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f0e68c;
+      border: 1px solid #8B4513;
+      font-size: 16px;
+      color: #6c4f3d;
+    }
+  
+    #serverDetails {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      color: #FFF;
+    }
+  
+    #serverDetails p {
+      font-size: 18px;
+      font-family: 'Minecraft', Arial, sans-serif;
+      margin: 5px 0;
+    }
+  
+    #logs {
+      background-color: #2f2f2f;
+      color: #f0e68c;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 14px;
+      display: none;
+    }
+  
+    #addServerBtn {
+      background-color: #32CD32;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      padding: 12px 24px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+    }
+  
+    #addServerBtn:hover {
+      background-color: #228B22;
+    }
+  
+    .server-status {
+      font-size: 18px;
+      font-weight: bold;
+      color: #FFD700;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+  
+    .server-status.running {
+      color: #32CD32;
+    }
+  
+    .server-status.stopped {
+      color: #DC143C;
+    }
+  
+    .server-status.loading {
+      color: #FF8C00;
+    }
+  </style>
+  </head>
+
+<body>
+  <form id="serverForm">
+    <label for="servers">Sélectionnez un serveur Minecraft :</label>
+    <select id="servers" name="servers" onchange="updateServerDetails()">
+      <option value="defaut">--</option>
+    </select>
+    <button type="button" id="startBtn" style="display:none;" onclick="startServer()">Démarrer</button>
+    <button type="button" id="stopBtn" style="display:none;" onclick="stopServer()">Arrêter</button>
+    <button id="addServerBtn" onclick="addServer()">Ajouter Serveur</button>
+  </form>
+
+  <div id="serverDetails">
+    <h3>Détails du serveur :</h3>
+    <p><strong>Nom:</strong> <span id="serverName">Aucun serveur sélectionné</span></p>
+    <p><strong>IP:</strong> <span id="serverIP">Non défini</span></p>
+    <p><strong>Port:</strong> <span id="serverPort">Non défini</span></p>
+  </div>
+
+  <div id="logs" style="display:none;">
+    <div id="logContent"></div>
+  </div>
+
+
+  <script>
+    window.onload = function () {
+      fetch('/containers')
+        .then(response => response.json())
+        .then(data => {
+          const select = document.getElementById('servers');
+          data.forEach(container => {
+            const option = document.createElement('option');
+            option.value = container.name;
+            option.text = container.name;
+            select.appendChild(option);
+          });
+
+          updateServerDetails();
+        });
+    };
+
+    function startServer() {
+      const server = document.getElementById('servers').value;
+      disableButtons(true); 
+      fetch(`/start/${server}`, { method: 'POST' })
+        .then(response => {
+          if (response.ok) {
+            alert(`Serveur ${server} démarré`);
+            updateButtonVisibility('running');
+          }
+          disableButtons(false);
+        })
+        .catch(error => {
+          alert('Erreur lors du démarrage du serveur');
+          disableButtons(false);
+        });
+    }
+
+    function stopServer() {
+      const server = document.getElementById('servers').value;
+      disableButtons(true);  
+      fetch(`/stop/${server}`, { method: 'POST' })
+        .then(response => {
+          if (response.ok) {
+            alert(`Serveur ${server} arrêté`);
+            updateButtonVisibility('stopped');
+          }
+          disableButtons(false);
+        })
+        .catch(error => {
+          alert('Erreur lors de l\'arrêt du serveur');
+          disableButtons(false);
+        });
+    }
+
+    function addServer() {
+      disableButtons(true); 
+
+      fetch('/add-server', {
+          method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+          const serverName = data.serverName;
+          const containerId = data.containerId;
+
+          const select = document.getElementById('servers');
+          const option = document.createElement('option');
+          option.value = serverName;
+          option.textContent = `${serverName} (loading...)`;
+          option.dataset.loading = true; 
+          select.appendChild(option);
+
+          checkServerStatus(serverName, containerId, option);
+
+          disableButtons(false);
+      })
+      .catch(error => {
+          alert('Erreur lors de l\'ajout du serveur');
+          disableButtons(false);
+      });
+    }
+
+    function updateServerDetails() {
+      const server = document.getElementById('servers').value;
+
+      fetch(`/containers`)
+        .then(response => response.json())
+        .then(servers => {
+          const selectedServer = servers.find(s => s.name === server);
+          if (selectedServer) {
+            document.getElementById('serverName').textContent = selectedServer.name;
+            document.getElementById('serverIP').textContent = selectedServer.ip;
+            document.getElementById('serverPort').textContent = selectedServer.port;
+            updateButtonVisibility(selectedServer.status);
+          }
+        });
+    }
+
+    function disableButtons(disabled) {
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => button.disabled = disabled);
+    }
+
+    function updateButtonVisibility(status) {
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+
+      if (status === 'running') {
+        startBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-block';
+      } else {
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+      }
+    }
+
+    function checkServerStatus(serverName, containerId, optionElement) {
+      const interval = setInterval(() => {
+          fetch(`/status/${containerId}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.status === 'running') {
+                      optionElement.textContent = serverName;
+                      optionElement.dataset.loading = false;
+                      clearInterval(interval);
+                  } else if (data.status === 'exited') {
+                      optionElement.textContent = `${serverName} (failed to start)`;
+                      clearInterval(interval);
+                  }
+              })
+              .catch(error => {
+                  console.error('Erreur lors de la vérification du statut:', error);
+                  clearInterval(interval);
+              });
+      }, 5000); 
+  }
+
+  </script>
+</body>
+
+</html>
