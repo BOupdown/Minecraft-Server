@@ -196,17 +196,20 @@ app.get('/logs/:server', (req, res) => {
 // Route pour ajouter un nouveau serveur Minecraft
 app.post('/add-server', (req, res) => {
     const newServerName = `minecraft-server${Date.now()}`;
+    const hostPort = 25568;  // Ou bien utilisez un port aléatoire
 
-    exec(`docker run -d --name ${newServerName} -e EULA=TRUE itzg/minecraft-server`, (error, stdout, stderr) => {
+    // Commande Docker pour créer un serveur Minecraft en mappant un port
+    exec(`docker run -d -p ${hostPort}:25565 --name ${newServerName} -e EULA=TRUE itzg/minecraft-server`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'ajout du serveur: ${stderr}`);
-            return res.status(500).json({ error: 'Erreur lors de l\'ajout du serveur', details: stderr || error.message });
+            return res.status(500).json({ error: 'Erreur lors de l\'ajout du serveur' });
         }
-
-        const containerId = stdout.trim(); // Récupérer l'ID du conteneur
-        res.json({ serverName: newServerName, containerId }); // Retour immédiat
+        // Si vous voulez attribuer le port généré dynamiquement
+        res.json({ serverName: newServerName, port: hostPort });
     });
 });
+
+
 app.get('/status/:containerId', (req, res) => {
     const containerId = req.params.containerId;
 
