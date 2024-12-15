@@ -122,7 +122,6 @@
     <label for="servers">Sélectionnez un serveur Minecraft :</label>
     <select id="servers" name="servers" onchange="updateServerDetails()">
       <option value="defaut">--</option>
-      <!-- Les options des serveurs seront insérées ici dynamiquement -->
     </select>
     <button type="button" id="startBtn" style="display:none;" onclick="startServer()">Démarrer</button>
     <button type="button" id="stopBtn" style="display:none;" onclick="stopServer()">Arrêter</button>
@@ -130,7 +129,6 @@
   </form>
 
   <div id="serverDetails">
-    <!-- Server details will be displayed here -->
     <h3>Détails du serveur :</h3>
     <p><strong>Nom:</strong> <span id="serverName">Aucun serveur sélectionné</span></p>
     <p><strong>IP:</strong> <span id="serverIP">Non défini</span></p>
@@ -143,7 +141,6 @@
 
 
   <script>
-    // Obtenir la liste des serveurs au chargement de la page
     window.onload = function () {
       fetch('/containers')
         .then(response => response.json())
@@ -156,14 +153,13 @@
             select.appendChild(option);
           });
 
-          // Vérifier le statut du serveur sélectionné au démarrage
           updateServerDetails();
         });
     };
 
     function startServer() {
       const server = document.getElementById('servers').value;
-      disableButtons(true);  // Disable buttons during the operation
+      disableButtons(true); 
       fetch(`/start/${server}`, { method: 'POST' })
         .then(response => {
           if (response.ok) {
@@ -180,7 +176,7 @@
 
     function stopServer() {
       const server = document.getElementById('servers').value;
-      disableButtons(true);  // Disable buttons during the operation
+      disableButtons(true);  
       fetch(`/stop/${server}`, { method: 'POST' })
         .then(response => {
           if (response.ok) {
@@ -196,7 +192,7 @@
     }
 
     function addServer() {
-      disableButtons(true); // Désactiver les boutons pendant l'opération
+      disableButtons(true); 
 
       fetch('/add-server', {
           method: 'POST'
@@ -206,15 +202,13 @@
           const serverName = data.serverName;
           const containerId = data.containerId;
 
-          // Ajouter directement le serveur à la liste avec un statut de "chargement"
           const select = document.getElementById('servers');
           const option = document.createElement('option');
           option.value = serverName;
           option.textContent = `${serverName} (loading...)`;
-          option.dataset.loading = true; // Indiquer qu'il est en cours de chargement
+          option.dataset.loading = true; 
           select.appendChild(option);
 
-          // Vérifier le statut du serveur régulièrement
           checkServerStatus(serverName, containerId, option);
 
           disableButtons(false);
@@ -225,11 +219,9 @@
       });
     }
 
-    // Mise à jour des détails du serveur sélectionné
     function updateServerDetails() {
       const server = document.getElementById('servers').value;
 
-      // Requête pour obtenir les détails du serveur
       fetch(`/containers`)
         .then(response => response.json())
         .then(servers => {
@@ -267,12 +259,10 @@
               .then(response => response.json())
               .then(data => {
                   if (data.status === 'running') {
-                      // Mettre à jour l'option lorsque le serveur est prêt
                       optionElement.textContent = serverName;
                       optionElement.dataset.loading = false;
-                      clearInterval(interval); // Arrêter de vérifier
+                      clearInterval(interval);
                   } else if (data.status === 'exited') {
-                      // Gestion d'erreurs si le conteneur s'arrête
                       optionElement.textContent = `${serverName} (failed to start)`;
                       clearInterval(interval);
                   }
@@ -281,7 +271,7 @@
                   console.error('Erreur lors de la vérification du statut:', error);
                   clearInterval(interval);
               });
-      }, 5000); // Vérifier toutes les 5 secondes
+      }, 5000); 
   }
 
   </script>

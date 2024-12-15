@@ -33,7 +33,6 @@ function getMinecraftContainers(callback) {
                 if (err) {
                     console.error(`Error inspecting container ${container}:`, portStderr);
                     processedContainers++;
-                    // Check if all containers have been processed
                     if (processedContainers === containers.length) {
                         callback(null, containersWithDetails);
                     }
@@ -42,7 +41,6 @@ function getMinecraftContainers(callback) {
 
                 console.log(`Inspect result for ${container}:`, portStdout);
 
-                // Split the details into container name, IP address, and port
                 const [name, ip, port] = portStdout.split(' - ');
                 containersWithDetails.push({
                     name: name.replace('/', ''),
@@ -52,7 +50,6 @@ function getMinecraftContainers(callback) {
 
                 processedContainers++;
 
-                // Check if all containers have been processed
                 if (processedContainers === containers.length) {
                     console.log("All containers processed:", containersWithDetails);
                     callback(null, containersWithDetails);
@@ -77,16 +74,13 @@ function updateServerStatus(serverName, status) {
     fs.writeFileSync('servers.json', JSON.stringify(servers, null, 2));
 }
 
-// Middleware pour servir des fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route pour lister les conteneurs Minecraft
-// Route to list Minecraft containers
 app.get('/containers', (req, res) => {
     exec('docker ps --filter "name=minecraft" --format "{{.Names}}"', (error, stdout, stderr) => {
         if (error) {
             console.error("Error retrieving Minecraft containers list:", stderr);
-            return res.json([]); // Respond with an empty array on error
+            return res.json([]); 
         }
 
         const containers = stdout.split('\n').filter(name => name.trim() !== '');
@@ -95,7 +89,7 @@ app.get('/containers', (req, res) => {
 
         if (containers.length === 0) {
             console.log("No containers found.");
-            return res.json([]); // No containers to process
+            return res.json([]);
         }
 
         console.log(`Found ${containers.length} container(s):`, containers);
@@ -119,14 +113,13 @@ app.get('/containers', (req, res) => {
                     if (details.length === 3) {
                         const [name, ip, port] = details.map(str => str.trim());
                         containersWithDetails.push({
-                            name: name.replace('/', ''), // Remove leading slash from name
-                            ip: ip || 'No IP',          // Handle missing IP
-                            port: port || 'No Port Mapping' // Handle missing port
+                            name: name.replace('/', ''),
+                            ip: ip || 'No IP',         
+                            port: port || 'No Port Mapping' 
                         });
                     }
                 }
 
-                // Send the response after all containers are processed
                 if (processedContainers === containers.length) {
                     console.log("All containers processed:", containersWithDetails);
                     res.json(containersWithDetails);
@@ -160,7 +153,6 @@ app.post('/stop/:server', (req, res) => {
     });
 });
 
-// SSE for live Docker logs
 app.get('/logs/:server', (req, res) => {
     const server = req.params.server;
 
@@ -169,15 +161,14 @@ app.get('/logs/:server', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    // Use Docker logs to stream container logs
     const logStream = exec(`docker logs -f ${server}`);
 
     logStream.stdout.on('data', (data) => {
-        res.write(`data: ${data}\n\n`); // Send logs to client
+        res.write(`data: ${data}\n\n`); 
     });
 
     logStream.stderr.on('data', (data) => {
-        res.write(`data: ${data}\n\n`); // Send error logs to client
+        res.write(`data: ${data}\n\n`);
     });
 
     logStream.on('close', () => {
@@ -186,25 +177,21 @@ app.get('/logs/:server', (req, res) => {
         res.end();
     });
 
-    // Handle client disconnect
     req.on('close', () => {
         logStream.kill();
     });
 });
 
 
-// Route pour ajouter un nouveau serveur Minecraft
 app.post('/add-server', (req, res) => {
     const newServerName = `minecraft-server${Date.now()}`;
-    const hostPort = 25568;  // Ou bien utilisez un port aléatoire
+    const hostPort = 25568;  // port fixe
 
-    // Commande Docker pour créer un serveur Minecraft en mappant un port
     exec(`docker run -d -p ${hostPort}:25565 --name ${newServerName} -e EULA=TRUE itzg/minecraft-server`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'ajout du serveur: ${stderr}`);
             return res.status(500).json({ error: 'Erreur lors de l\'ajout du serveur' });
         }
-        // Si vous voulez attribuer le port généré dynamiquement
         res.json({ serverName: newServerName, port: hostPort });
     });
 });

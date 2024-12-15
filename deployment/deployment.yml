@@ -16,10 +16,9 @@ spec:
     spec:
       containers:
       - name: demominecraft
-        image: itzg/minecraft-server  # Use your custom image if applicable
+        image: itzg/minecraft-server 
         ports:
-        - containerPort: 25565  # Default port for Minecraft server
-        env:  # Optional: Set environment variables if needed
+        - containerPort: 25565  
+        env:
           - name: EULA
-            value: "TRUE"  # Accept EULA (required)
-          # Add more environment variables as needed
+            value: "TRUE"  

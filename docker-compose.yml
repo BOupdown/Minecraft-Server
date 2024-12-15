@@ -29,11 +29,14 @@ services:
     networks:
       - mon_reseau
     ports:
-      - "25566:25565"  # Nouveau port
+      - "25566:25565"
+    volumes:
+      - minecraft_data2:/data 
     container_name: minecraft_server_2
 
 volumes:
   minecraft_data:
+  minecraft_data2: 
 
 networks:
   mon_reseau:
