@@ -197,14 +197,31 @@ app.get('/logs/:server', (req, res) => {
 app.post('/add-server', (req, res) => {
     const newServerName = `minecraft-server${Date.now()}`;
 
-    exec(`docker run -d --name ${newServerName} itzg/minecraft-server`, (error, stdout, stderr) => {
+    exec(`docker run -d --name ${newServerName} -e EULA=TRUE itzg/minecraft-server`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Erreur lors de l'ajout du serveur: ${stderr}`);
-            return res.status(500).json({error: 'Erreur lors de l\'ajout du serveur'});
+            return res.status(500).json({ error: 'Erreur lors de l\'ajout du serveur', details: stderr || error.message });
         }
-        res.json({serverName: newServerName});
+
+        const containerId = stdout.trim(); // Récupérer l'ID du conteneur
+        res.json({ serverName: newServerName, containerId }); // Retour immédiat
     });
 });
+app.get('/status/:containerId', (req, res) => {
+    const containerId = req.params.containerId;
+
+    exec(`docker inspect --format '{{.State.Status}}' ${containerId}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur lors de la vérification du statut du conteneur: ${stderr}`);
+            return res.status(500).json({ error: 'Erreur lors de la vérification du statut' });
+        }
+
+        const status = stdout.trim();
+        res.json({ status });
+    });
+});
+
+
 
 function getMinecraftContainers(callback) {
     exec('docker ps --filter "name=minecraft" --format "{{.Names}}"', (error, stdout, stderr) => {
